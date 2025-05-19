@@ -14,6 +14,14 @@ void handleExitCommand(struct InputStruct* input_args ){
   exit(0);
 };
 
+void handleEchoCommand(struct InputStruct* input_args){
+  for(int i = 0; i < input_args->arg_counts; i ++){
+    printf("%s ",input_args->arg[i]);
+    if(i == input_args->arg_counts - 1){
+      printf("\n");
+    }
+  }
+}
 struct InputStruct parse_input(char* original_input){
   struct InputStruct result;
   result.command[0] = '\0';
@@ -71,7 +79,9 @@ int main(int argc, char *argv[]) {
       if(parsed.command[0] != '\0'){
         if(strcmp(parsed.command,"exit") == 0){
           handleExitCommand(&parsed);
-        } else {
+        } else if(strcmp(parsed.command, "echo") == 0){
+          handleEchoCommand(&parsed);
+        }else {
           printf("%s: command not found\n",parsed.command);
         }
       }
