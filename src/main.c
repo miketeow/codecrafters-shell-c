@@ -32,7 +32,7 @@ void handleTypeCommand(struct InputStruct* input_args){
     return;
   }
  }
- printf("%s: command not found\n",input_args->args[0]);
+ printf("%s: not found\n",input_args->args[0]);
 }
 struct InputStruct parse_input(char* original_input){
   struct InputStruct result;
