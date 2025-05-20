@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define MAX_ARGS 10
-
+#define MAX_PATH_LEN 256
 struct InputStruct{
   char command[100];
   char *args[MAX_ARGS];
@@ -26,14 +27,51 @@ void handleEchoCommand(struct InputStruct* input_args){
 }
 
 void handleTypeCommand(struct InputStruct* input_args){
+  // Handle builtin command
  for(int i = 0; i < (sizeof(builtin_command)/(sizeof(char*))); i++){
   if(strcmp(input_args->args[0],builtin_command[i]) == 0){
     printf("%s is a shell builtin\n",input_args->args[0]);
     return;
   }
+  // Handle PATH
+  const char *path_env_variable = getenv("PATH");
+
+  if(path_env_variable == NULL){
+    printf("Path env not found");
+  } else {
+
+    const *path_copy = strdup(path_env_variable);
+    if(path_copy == NULL){
+      printf("Failed to allocate memory for PATH copy");
+      return;
+    }
+    int found_path = 0;
+    char *dir = strtok(path_copy,":");
+    while(dir != NULL){
+      char full_path[MAX_PATH_LEN];
+      int path_length = snprintf(full_path,sizeof(full_path),dir,input_args->args[0]);
+
+      if(path_length < 0 || path_length >= sizeof(full_path)){
+        // error in formating or path too long for buffer
+        fprintf(stderr,"Error creating full path or path too long.\n");
+      }
+      if(access(full_path,X_OK) == 0){
+        printf("%s is %s",input_args->args[0],full_path);
+        found_path = 1;
+        break;
+      }
+      dir = strtok(NULL,":");
+    }
+    free(path_copy);
+    if(!found_path){
+      printf("%s: not found\n",input_args->args[0]);
+    }
+  }
+
  }
  printf("%s: not found\n",input_args->args[0]);
 }
+
 struct InputStruct parse_input(char* original_input){
   struct InputStruct result;
   result.command[0] = '\0';
