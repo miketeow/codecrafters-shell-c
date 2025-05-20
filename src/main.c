@@ -33,6 +33,7 @@ void handleTypeCommand(struct InputStruct* input_args){
     printf("%s is a shell builtin\n",input_args->args[0]);
     return;
   }
+}
   // Handle PATH
   const char *path_env_variable = getenv("PATH");
 
@@ -40,23 +41,24 @@ void handleTypeCommand(struct InputStruct* input_args){
     printf("Path env not found");
   } else {
 
-    const *path_copy = strdup(path_env_variable);
+    char *path_copy = strdup(path_env_variable);
     if(path_copy == NULL){
       printf("Failed to allocate memory for PATH copy");
       return;
     }
     int found_path = 0;
     char *dir = strtok(path_copy,":");
+    char full_path[MAX_PATH_LEN];
+
     while(dir != NULL){
-      char full_path[MAX_PATH_LEN];
-      int path_length = snprintf(full_path,sizeof(full_path),dir,input_args->args[0]);
+      int path_length = snprintf(full_path,sizeof(full_path),"%s/%s",dir,input_args->args[0]);
 
       if(path_length < 0 || path_length >= sizeof(full_path)){
         // error in formating or path too long for buffer
         fprintf(stderr,"Error creating full path or path too long.\n");
       }
       if(access(full_path,X_OK) == 0){
-        printf("%s is %s",input_args->args[0],full_path);
+        printf("%s is %s\n",input_args->args[0],full_path);
         found_path = 1;
         break;
       }
@@ -66,10 +68,7 @@ void handleTypeCommand(struct InputStruct* input_args){
     if(!found_path){
       printf("%s: not found\n",input_args->args[0]);
     }
-  }
-
  }
- printf("%s: not found\n",input_args->args[0]);
 }
 
 struct InputStruct parse_input(char* original_input){
