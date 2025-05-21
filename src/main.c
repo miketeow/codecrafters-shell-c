@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #define MAX_ARGS 10
 #define MAX_PATH_LEN 256
@@ -52,7 +52,6 @@ void handleTypeCommand(struct InputStruct *input_args) {
     while (dir != NULL) {
       int path_length = snprintf(full_path, sizeof(full_path), "%s/%s", dir,
                                  input_args->args[0]);
-
       if (path_length < 0 || path_length >= sizeof(full_path)) {
         // error in formating or path too long for buffer
         fprintf(stderr, "Error creating full path or path too long.\n");
@@ -74,18 +73,18 @@ void handleTypeCommand(struct InputStruct *input_args) {
 void handleCustomProgram(struct InputStruct *input_args) {
   pid_t pid = fork();
 
-  if(pid < 0){
+  if (pid < 0) {
     perror("fork failed");
-  } else if (pid == 0){
+  } else if (pid == 0) {
     // This block is executed by child process
     // argument + 1 (command name) + 1 (null terminator)
     char *exec_argv[input_args->arg_counts + 2];
     exec_argv[0] = input_args->command;
-    for(int i = 0; i < input_args->arg_counts; i ++){
+    for (int i = 0; i < input_args->arg_counts; i++) {
       exec_argv[i + 1] = input_args->args[i];
     }
     exec_argv[input_args->arg_counts + 1] = NULL;
-    execvp(input_args->command,exec_argv);
+    execvp(input_args->command, exec_argv);
 
     // if execvp return, it means error;
     perror(input_args->command);
@@ -93,7 +92,7 @@ void handleCustomProgram(struct InputStruct *input_args) {
   } else {
     // This is the case of pid > 0, executed by parent process
     int child_status;
-    waitpid(pid,&child_status,0);
+    waitpid(pid, &child_status, 0);
   }
 }
 struct InputStruct parse_input(char *original_input) {
@@ -156,10 +155,13 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(parsed.command, "echo") == 0) {
           handleEchoCommand(&parsed);
         } else if (strcmp(parsed.command, "type") == 0) {
-          handleTypeCommand(&parsed);
+          if (parsed.arg_counts > 0) {
+            handleTypeCommand(&parsed);
+          } else {
+            fprintf(stderr, "type: usage: type <command>\n");
+          }
         } else {
           handleCustomProgram(&parsed);
-          printf("%s: command not found\n", parsed.command);
         }
       }
     } else {
