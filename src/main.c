@@ -87,7 +87,7 @@ void handleCustomProgram(struct InputStruct *input_args) {
     execvp(input_args->command, exec_argv);
 
     // if execvp return, it means error;
-    perror(input_args->command);
+    fprintf(stderr, "%s: command not found\n", input_args->command);
     exit(EXIT_FAILURE);
   } else {
     // This is the case of pid > 0, executed by parent process
